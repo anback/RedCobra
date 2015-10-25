@@ -10,4 +10,15 @@ Util = class {
 
 		return res;
 	}
+
+	static toObject(array, uniqueIdFieldName) {
+
+        let rv = {};
+        for (var i = 0; i < array.length; ++i) {
+            let item = array[i];
+            rv[item[uniqueIdFieldName]] = item;
+        }
+
+        return rv;
+    }
 }

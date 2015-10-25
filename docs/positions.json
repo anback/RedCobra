@@ -5,11 +5,11 @@
             "acqPriceAcc": "100.0",
             "pawnPercent": "80",
             "qty": "0.0912",
-            "marketValue": "100.85535",
+            "marketValue": "400.85535",
             "marketValueAcc": "100.85535",
             "instrument": {
                 "mainMarketId": "23",
-                "identifier": "16256554",
+                "identifier": "16389275",
                 "type": "A",
                 "currency": "DKK"
             }
@@ -22,7 +22,7 @@
             "marketValueAcc": "642.6",
             "instrument": {
                 "mainMarketId": "23",
-                "identifier": "16099938",
+                "identifier": "16311866",
                 "type": "A",
                 "currency": "DKK",
                 "mainMarketPrice": "55"
