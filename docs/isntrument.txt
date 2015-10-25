@@ -1,0 +1,21 @@
+[ { tradables: [ [Object], [Object], [Object] ],
+
+I20151025-11:40:33.411(2)?     instrument_id: 16310102,
+
+I20151025-11:40:33.411(2)?     instrument_type: 'ESH',
+
+I20151025-11:40:33.412(2)?     instrument_group_type: 'EQ',
+
+I20151025-11:40:33.412(2)?     currency: 'DKK',
+
+I20151025-11:40:33.412(2)?     number_of_securities: 2112564000,
+
+I20151025-11:40:33.412(2)?     multiplier: 1,
+
+I20151025-11:40:33.412(2)?     pawn_percentage: 85,
+
+I20151025-11:40:33.412(2)?     symbol: 'NOVO B',
+
+I20151025-11:40:33.412(2)?     isin_code: 'DK0060534915',
+I20151025-11:40:33.412(2)?     name: 'Novo Nordisk B A/S',
+I20151025-11:40:33.412(2)?     marketID: 23 } ]

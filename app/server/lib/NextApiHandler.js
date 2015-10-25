@@ -9,6 +9,14 @@ NextApiHandler = class {
         this.marketsRepository = marketsRepository;
     }
 
+    get(url, params = {}, opts = {}) {
+        return this.sendRequest(url, 'get', params, opts);
+    }
+
+    post(url, params = {}, opts = {}) {
+        return this.sendRequest(url, 'post', params, opts);
+    }
+
     sendRequest(url, method = 'get', params = {}, opts = {}) {
         opts.headers = this.getHeaders();
 
@@ -33,16 +41,37 @@ NextApiHandler = class {
         return HTTP.call(method, url, opts).data;
     }
 
+    sendOrder(order) {
+        return this.post(`/accounts/${this.accountNo}/orders`, {
+            identifier : order.instrument.instrument_id,
+            marketID : order.instrument.marketID,
+            price : order.price,
+            volume : order.volume,
+            side : order.side,
+            currency : order.instrument.currency
+        });
+    }
+
     getMarkets() {
-        return this.sendRequest('/markets');
+        return this.get('/markets');
     }
 
     getAccounts() {
-        return this.sendRequest('/accounts');
+        return this.get('/accounts');
     }
 
     getAccount(accNo = this.accountNo) {
-        return this.sendRequest(`/accounts/${accNo}`)
+        return this.get(`/accounts/${accNo}`)
+    }
+
+    getPrice(instrument) {
+        //Skiten funkar nog inte på helger
+        return 57.0;
+
+        return this.get('/chart_data', {
+            identifier : instrument.instrument_id,
+            marketID : instrument.marketID
+        })
     }
 
     getInstrument(sharevilleInstrument) {
@@ -57,18 +86,21 @@ NextApiHandler = class {
                 type: 'A'
             }
 
-            data = this.sendRequest('/instruments', 'get', params);
+            data = this.get('/instruments', params);
 
             //console.log(data);
 
             data = data.filter(x => x.symbol === sharevilleInstrument.symbol)
 
             if(data.length > 0)
+            {
+                data[0].marketID = market.market_id
                 return false;
+            }
             return true;
         })
 
-        return data;
+        return data[0];
     }
 
     getHeaders() {
@@ -93,7 +125,7 @@ NextApiHandler = class {
                 auth: auth
             }
         }
-        return this.sendRequest('/login', 'post', undefined, opts)
+        return this.post('/login', undefined, opts)
     }
 
     encryptLogin(user, pass, keyfile) {

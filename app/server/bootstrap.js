@@ -3,8 +3,12 @@ Meteor.startup(function () {
 	var nextApiHandler = new NextApiHandler(marketsRepository)
 	var sharevilleInstrumentRepository = new SharevilleInstrumentRepository();
 
-	//console.log('Session Key: ')
-	//console.log(nextApiHandler.session.session_key);
+	var sharevilleInstrument = sharevilleInstrumentRepository.getInstrument()
+	var instrument = nextApiHandler.getInstrument(sharevilleInstrument)
 
-	console.log(nextApiHandler.getInstrument(sharevilleInstrumentRepository.getInstrument()));
+	console.log("isntrument")
+	console.log(instrument);
+
+	var price = nextApiHandler.getPrice(instrument);
+	console.log(price);
 });
