@@ -1,8 +1,10 @@
 Meteor.startup(function () {
-	var nextApiHandler = new NextApiHandler()
-	console.log('Session Key: ')
-	console.log(nextApiHandler.session.session_key);
+	var marketsRepository = new MarketsRepository();
+	var nextApiHandler = new NextApiHandler(marketsRepository)
+	var sharevilleInstrumentRepository = new SharevilleInstrumentRepository();
 
-	console.log("Get Accounts: ")
-	console.log(nextApiHandler.getAccounts() );
+	//console.log('Session Key: ')
+	//console.log(nextApiHandler.session.session_key);
+
+	console.log(nextApiHandler.getInstrument(sharevilleInstrumentRepository.getInstrument()));
 });
