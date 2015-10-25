@@ -20,9 +20,7 @@ NextApiHandler = class {
     sendRequest(url, method = 'get', params = {}, opts = {}) {
         opts.headers = this.getHeaders();
 
-        console.log(params)
         params = Util.toArray(params)
-        console.log(params)
 
         if (params.length > 0) {
             url += '?'
@@ -64,6 +62,13 @@ NextApiHandler = class {
         return this.get(`/accounts/${accNo}`)
     }
 
+    getAccountPositions(accNo = this.accountNo) {
+
+        return {  "positions": {"position": [  {"acqPrice": "100.0","acqPriceAcc": "100.0","pawnPercent": "80","qty": "912.0","marketValue": "100.85535","marketValueAcc": "100.85535","instrument": {  "mainMarketId": "23",  "identifier": "16256554",  "type": "A",  "currency": "DKK"}  },  {"acqPrice": "700.1524","acqPriceAcc": "700.1524","pawnPercent": "85","qty": "9.0","marketValue": "642.6","marketValueAcc": "642.6","instrument": {  "mainMarketId": "23",  "identifier": "16099938",  "type": "A",  "currency": "DKK",  "mainMarketPrice": "55"}  }]  }}
+        var res = this.get(`/accounts/${accNo}/positions`)
+        return res;
+    }
+
     getPrice(instrument) {
         //Skiten funkar nog inte på helger
         return 57.0;
@@ -75,6 +80,13 @@ NextApiHandler = class {
     }
 
     getInstrument(sharevilleInstrument) {
+
+        var cachedInstrument = Instruments.findOne({
+            sharevilleInstrumentId : sharevilleInstrument.instrument_id
+        })
+
+        if(cachedInstrument)
+            return cachedInstrument;
         var markets = this.marketsRepository.getMarkets(sharevilleInstrument.country);
 
         let data = {};
@@ -95,11 +107,21 @@ NextApiHandler = class {
             if(data.length > 0)
             {
                 data[0].marketID = market.market_id
+                data[0].sharevilleInstrumentId = sharevilleInstrument.instrument_id
                 return false;
             }
             return true;
         })
 
+        if(!data[0])
+            throw new Error("Could not find instrument " + sharevilleInstrument.name) 
+
+        //Set item in cache
+        Instruments.upsert({
+            sharevilleInstrumentId : data[0].instrument_id
+        }, {
+            $set: data[0]
+        })
         return data[0];
     }
 
@@ -113,7 +135,6 @@ NextApiHandler = class {
         if (this.session)
             res.Authorization = 'Basic ' + new Buffer(`${this.session.session_key}:${this.session.session_key}`).toString('base64')
 
-        console.log(res);
         return res;
     }
 

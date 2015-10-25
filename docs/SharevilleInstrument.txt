@@ -1,0 +1,12 @@
+            name: 'Novo Nordisk B A/S',
+            country: 'DK',
+            instrument_id: 16256554,
+            symbol : 'NOVO B',
+            isin_code : 'DK0060534915'
+
+
+            I20151025-14:49:41.703(2)?   { symbol: 'VWS',
+
+I20151025-14:49:41.703(2)?     instrument_id: '16099938',
+
+I20151025-14:49:41.703(2)?     weightInterval: { min: 12.5, max: 17.5, mean: 15 } },
