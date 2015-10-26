@@ -4,5 +4,6 @@
 
   "sample": "value",
   "nextUser" :  "andersback",
-  "nextPass" : "EXI1R2k4Sqjk"
+  "nextPass" : "EXI1R2k4Sqjk",
+  "is-dev" : true
 }

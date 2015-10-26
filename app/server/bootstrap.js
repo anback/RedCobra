@@ -1,16 +1,16 @@
 Meteor.startup(function() {
     var marketsRepository = new MarketsRepository();
-    var nextApiHandler = new NextApiHandler(marketsRepository)
+    var nextApiHandlerMock = new NextApiHandler(marketsRepository)
     var sharevilleInstrumentRepository = new SharevilleInstrumentRepository();
-    var redCobraManager = new RedCobraManager(sharevilleInstrumentRepository, nextApiHandler);
+    var redCobraManager = new RedCobraManager(sharevilleInstrumentRepository, nextApiHandlerMock);
 
-    nextApiHandler.sendOrder = function(order) {
+    nextApiHandlerMock.sendOrder = function(order) {
         order.name = order.instrument.name;
         delete order.instrument;
         console.log(order)
     }
 
-    nextApiHandler.getPrice = function() {
+    nextApiHandlerMock.getPrice = function() {
         return 57.0
     }
 

@@ -80,7 +80,7 @@ RedCobraManager = class {
         //Get Nordnet Instruments
         var positions = this.nextApiHandler.getAccountPositions();
 
-        if (!positions)
+        if (!Array.isArray(positions))
             positions = [];
 
         positions = positions.map(position => {
@@ -115,7 +115,7 @@ RedCobraManager = class {
         //Get Nordnet Instruments
         var positions = this.nextApiHandler.getAccountPositions();
 
-        if (!positions)
+        if (!Array.isArray(positions))
             return;
 
         var account = this.nextApiHandler.getAccount();
@@ -130,10 +130,7 @@ RedCobraManager = class {
     hasPendingOrders() {
         var orders = this.nextApiHandler.getOrders();
 
-        if (!orders)
-            return false;
-
-        if (orders.some(order => order.actionState != 'SUCCESS'))
+        if (Array.isArray(orders) && orders.some(order => order.actionState != 'SUCCESS'))
             return true
 
         return false;

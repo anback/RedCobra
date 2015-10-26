@@ -17,7 +17,43 @@ NextApiHandler = class {
         return this.sendRequest(url, 'post', undefined, opts);
     }
 
+    getCachedResult(url) {
+        var cachedRequest = Request.findOne({
+            url: url
+        })
+
+        if (!cachedRequest)
+            return undefined;
+
+        if(cachedRequest.cachedItems)
+            return cachedRequest.cachedItems
+
+        if (cachedRequest)
+            return cachedRequest;
+    }
+
+    setCachedResult(url, res) {
+
+        if(!res)
+            res = {empty : 'empty'};
+
+        if(Array.isArray(res))
+            res = {
+                cachedItems : res
+            }
+
+        //Set item in cache
+        Request.upsert({
+            url: url
+        }, {
+            $set: res 
+        })
+    }
+
     sendRequest(url, method = 'get', params = {}, opts = {}) {
+        
+        url = this.baseUrl + url;
+
         opts.headers = this.getHeaders();
 
         params = Util.toArray(params)
@@ -33,10 +69,23 @@ NextApiHandler = class {
             }, '');
         }
 
-        url = this.baseUrl + url;
-        console.log(`${method} -> ${url}`);
+        //Get Cached Results
+        var res = this.getCachedResult(url);
+        if(res)
+        {
+            console.log(`CACHED ${method} -> ${url}`);
+            return res;
+        }
 
-        return HTTP.call(method, url, opts).data;
+        debugger
+        //Call Service
+        console.log(`${method} -> ${url}`);
+        res = HTTP.call(method, url, opts).data;
+
+        //Set Cached Results
+        this.setCachedResult(url, res);
+
+        return res;
     }
 
     sendOrder(order) {
@@ -66,8 +115,6 @@ NextApiHandler = class {
 
     getAccount(accNo = this.accountNo) {
         var account = this.get(`/accounts/${accNo}`)
-
-        console.log(account);
         return new Account(account.account_sum.value,
             account.full_marketvalue.value,
             account.account_currency,
@@ -90,12 +137,6 @@ NextApiHandler = class {
 
     getInstrument(sharevilleInstrument) {
 
-        var cachedInstrument = Instruments.findOne({
-            sharevilleInstrumentId: sharevilleInstrument.instrument_id
-        })
-
-        if (cachedInstrument)
-            return cachedInstrument;
         var markets = this.marketsRepository.getMarkets(sharevilleInstrument.country);
 
         let data = {};
@@ -124,12 +165,6 @@ NextApiHandler = class {
         if (!data[0])
             throw new Error("Could not find instrument " + sharevilleInstrument.name)
 
-        //Set item in cache
-        Instruments.upsert({
-            sharevilleInstrumentId: data[0].instrument_id
-        }, {
-            $set: data[0]
-        })
         return data[0];
     }
 
