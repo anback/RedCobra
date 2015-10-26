@@ -50,6 +50,10 @@ NextApiHandler = class {
         });
     }
 
+    getOrders() {
+        return this.get(`/accounts/${this.accountNo}/orders`);
+    }
+
     getMarkets() {
         return this.get('/markets');
     }
@@ -64,7 +68,7 @@ NextApiHandler = class {
 
     getAccountPositions(accNo = this.accountNo) {
 
-        return {    "positions": {        "position": [{            "acqPrice": "100.0",            "acqPriceAcc": "100.0",            "pawnPercent": "80",            "qty": "0.0912",            "marketValue": "90000.85535",            "marketValueAcc": "100.85535",            "instrument": {                "mainMarketId": "23",                "identifier": "16389275",                "type": "A",                "currency": "DKK"            }        }, {            "acqPrice": "700.1524",            "acqPriceAcc": "700.1524",            "pawnPercent": "85",            "qty": "9.0",            "marketValue": "642000.6",            "marketValueAcc": "642.6",            "instrument": {                "mainMarketId": "23",                "identifier": "16311866",                "type": "A",                "currency": "DKK",                "mainMarketPrice": "55"            }        }]    }}
+        //return {    "positions": {        "position": [{            "acqPrice": "100.0",            "acqPriceAcc": "100.0",            "pawnPercent": "80",            "qty": "0.0912",            "marketValue": "90000.85535",            "marketValueAcc": "100.85535",            "instrument": {                "mainMarketId": "23",                "identifier": "16389275",                "type": "A",                "currency": "DKK"            }        }, {            "acqPrice": "700.1524",            "acqPriceAcc": "700.1524",            "pawnPercent": "85",            "qty": "9.0",            "marketValue": "642000.6",            "marketValueAcc": "642.6",            "instrument": {                "mainMarketId": "23",                "identifier": "16311866",                "type": "A",                "currency": "DKK",                "mainMarketPrice": "55"            }        }]    }}
         var res = this.get(`/accounts/${accNo}/positions`)
         return res;
     }

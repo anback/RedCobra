@@ -3,7 +3,7 @@ Meteor.startup(function () {
 	var nextApiHandler = new NextApiHandler(marketsRepository)
 	var sharevilleInstrumentRepository = new SharevilleInstrumentRepository();
 	var redCobraManager = new RedCobraManager(sharevilleInstrumentRepository, nextApiHandler);
-	redCobraManager.syncAccount();
+	redCobraManager.handleSellProcess();
 });
 
 

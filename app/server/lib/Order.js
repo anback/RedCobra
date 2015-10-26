@@ -5,4 +5,8 @@ Order = class {
 		this.side = side;
 		this.volume = volume;
 	}
+
+	save() {
+		Orders.insert(this);
+	}
 }

@@ -10,17 +10,14 @@ WeightInterval = class {
 	}
 
 	isInInterval(weight) {
-		weight = weight * 100;
 		return weight >= this.min && weight < this.max 
 	}
 
 	isInOrBelowInterval(weight) {
-		weight = weight * 100;
 		return weight < this.max;
 	}
 
 	getWeightDiff(weight) {
-		weight = weight * 100;
-		return (weight - this.mean) / 100;
+		return (weight - this.mean);
 	}
 }
