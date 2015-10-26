@@ -4,6 +4,8 @@ Meteor.startup(function () {
 	var sharevilleInstrumentRepository = new SharevilleInstrumentRepository();
 	var redCobraManager = new RedCobraManager(sharevilleInstrumentRepository, nextApiHandler);
 	redCobraManager.handleSellProcess();
+	redCobraManager.handleBuyProcess();
+	
 });
 
 

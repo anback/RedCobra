@@ -15,15 +15,33 @@ RedCobraManager = class {
         this.weightIntervals.push(new WeightInterval(0.125, 0.175))
     }
 
-    getSellOrder(position, accountSum, sharevilleInstruments) {
+    getPopularInstruments() {
+        var res = this.sharevilleInstrumentRepository.getInstruments();
+        res = res.sort(function(a, b) {
+            return a.occurence_prc - b.occurence_prc
+        })
+        res = res.map((item, index) => {
+            var instrument = this.nextApiHandler.getInstrument(item);
+            return {
+                symbol: item.symbol,
+                weightInterval: this.weightIntervals[index],
+                instrument_id: instrument.instrument_id,
+                occurence_prc: item.occurence_prc,
+                instrument: instrument
+            }
+        })
+
+        return res;
+    }
+
+    getSellOrder(position, account, sharevilleInstruments) {
         var sharevilleInstrument = sharevilleInstruments[position.instrument.identifier]
+        var price = this.nextApiHandler.getPrice(sharevilleInstrument.instrument)
 
         if (!sharevilleInstrument) //Sell all
-            return new Order(sharevilleInstrument.nextInstrument,
-            this.nextApiHandler.getPrice(sharevilleInstrument.nextInstrument),
-            'sell', position.qty)
+            return new Order(sharevilleInstrument.instrument, price, 'sell', position.qty)
 
-        var currentWeight = parseFloat(position.marketValue) / parseFloat(accountSum);
+        var currentWeight = parseFloat(position.marketValue) / parseFloat(account.getTotalValue());
         var currentWeightDiff = sharevilleInstrument.weightInterval.getWeightDiff(currentWeight);
         console.log(currentWeight);
 
@@ -32,80 +50,95 @@ RedCobraManager = class {
             return;
 
         //is not in current weight interval, genereate sell order that corresponds to diff
-        var qty = currentWeightDiff / 100 * accountSum;
-        return new Order(sharevilleInstrument.nextInstrument,
-            this.nextApiHandler.getPrice(sharevilleInstrument.nextInstrument),
-            'sell', qty)
+        var volume = currentWeightDiff / 100 * account.getTotalValue();
+        return new Order(sharevilleInstrument.instrument, price, 'sell', volume);
     }
 
-    getBuyOrders(position, accountSum, sharevilleInstruments) {
-        var sharevilleInstrument = sharevilleInstruments[position.instrument.identifier]
-    }
+    getBuyOrder(sharevilleInstrument, account, positions) {
+        var position = positions[sharevilleInstrument.instrument.instrument_id];
+        var fullMarketvalue = account.fullMarketValue;
+        var price = this.nextApiHandler.getPrice(sharevilleInstrument.instrument)
 
-    getPopularInstruments() {
-        var res = this.sharevilleInstrumentRepository.getInstruments();
-        res = res.sort(function(a,b) {return a.occurence_prc - b.occurence_prc})
-        res = res.map((item,index) => {
-            var instrument = this.nextApiHandler.getInstrument(item);
-            return {
-                symbol: item.symbol,
-                weightInterval: this.weightIntervals[index],
-                instrument_id: instrument.instrument_id,
-                occurence_prc : item.occurence_prc,
-                nextInstrument: instrument
-            }
-        })
+        if (!position)
+            position = {
+                instrument: sharevilleInstrument.instrument,
+                marketValue: 0,
 
-        return res;
+            };
+
+        var currentWeight = parseFloat(position.marketValue) / parseFloat(fullMarketvalue);
+        var currentWeightDiff = sharevilleInstrument.weightInterval.getWeightDiff(currentWeight);
+        var volume = Util.roof(fullMarketvalue * currentWeightDiff / price, account.availableMoney / price)
+
+        if (volume == 0)
+            return undefined;
+
+        return new Order(sharevilleInstrument.instrument, price, 'buy', volume)
     }
 
     handleBuyProcess() {
-        if(this.hasPendingOrders())
+        if (this.hasPendingOrders())
             throw new Error("Some orders where still pending")
-        //Get Shareville Instruments
+            //Get Shareville Instruments
         var sharevilleInstruments = this.getPopularInstruments();
 
         //Get Nordnet Instruments
         var positions = this.nextApiHandler.getAccountPositions();
 
+        if (!positions)
+            positions = [];
+
+        positions = positions.map(position => {
+            return {
+                instrument_id: position.instrument.identifier,
+                marketValue: position.marketValue,
+                currency: position.currency
+            }
+        })
+
+        positions = Util.toObject(positions, 'instrument_id')
         var account = this.nextApiHandler.getAccount();
-        var accountSum = account.account_sum.value;
-        sharevilleInstruments = Util.toObject(sharevilleInstruments, 'instrument_id')
+        var availableMoney = account.accountSum;
+        var buyOrders = [];
+        sharevilleInstruments.reduce((availableMoney, sharevilleInstrument) => {
+            account.availableMoney = availableMoney;
+            var order = this.getBuyOrder(sharevilleInstrument, account, positions)
 
-        var buyOrders = positions.map((position) => this.getBuyOrders(position, accountSum, sharevilleInstruments))
+            if (order)
+                buyOrders.push(order);
+
+            return order.getTotalValue() - availableMoney;
+        }, availableMoney)
+
+        buyOrders.forEach(order => this.nextApiHandler.sendOrder(order));
     }
-
 
     handleSellProcess() {
         //Get Shareville Instruments
         var sharevilleInstruments = this.getPopularInstruments();
-        console.log(sharevilleInstruments);
 
         //Get Nordnet Instruments
         var positions = this.nextApiHandler.getAccountPositions();
 
-        if(!positions)
-        	return;
+        if (!positions)
+            return;
 
         var account = this.nextApiHandler.getAccount();
-        var accountSum = account.account_sum.value;
         sharevilleInstruments = Util.toObject(sharevilleInstruments, 'instrument_id')
 
-        var sellOrders = positions.map((position) => this.getSellOrder(position, accountSum, sharevilleInstruments))
+        var sellOrders = positions.map((position) => this.getSellOrder(position, account, sharevilleInstruments))
 
         //Execute Sell Orders towarrd Nordnet
         sellOrders.forEach((order) => this.nextApiHandler.sendOrder(order));
-
-        console.log(this.hasPendingSellOrders())
     }
 
     hasPendingOrders() {
-    	var orders = this.nextApiHandler.getOrders();
+        var orders = this.nextApiHandler.getOrders();
 
-        if(!orders)
+        if (!orders)
             return false;
 
-        if(orders.some(order => order.actionState != 'SUCCESS'))
+        if (orders.some(order => order.actionState != 'SUCCESS'))
             return true
 
         return false;

@@ -34,7 +34,7 @@ NextApiHandler = class {
         }
 
         url = this.baseUrl + url;
-        console.log(url);
+        console.log(`${method} -> ${url}`);
 
         return HTTP.call(method, url, opts).data;
     }
@@ -42,7 +42,7 @@ NextApiHandler = class {
     sendOrder(order) {
         return this.post(`/accounts/${this.accountNo}/orders`, {
             identifier : order.instrument.instrument_id,
-            marketID : order.instrument.marketID,
+            market_id : order.instrument.marketID,
             price : order.price,
             volume : order.volume,
             side : order.side,
@@ -63,12 +63,17 @@ NextApiHandler = class {
     }
 
     getAccount(accNo = this.accountNo) {
-        return this.get(`/accounts/${accNo}`)
+        var account = this.get(`/accounts/${accNo}`)
+
+        console.log(account);
+        return new Account(account.account_sum.value, 
+            account.full_marketvalue.value, 
+            account.account_currency, 
+            account.trading_power.value)
     }
 
     getAccountPositions(accNo = this.accountNo) {
 
-        //return {    "positions": {        "position": [{            "acqPrice": "100.0",            "acqPriceAcc": "100.0",            "pawnPercent": "80",            "qty": "0.0912",            "marketValue": "90000.85535",            "marketValueAcc": "100.85535",            "instrument": {                "mainMarketId": "23",                "identifier": "16389275",                "type": "A",                "currency": "DKK"            }        }, {            "acqPrice": "700.1524",            "acqPriceAcc": "700.1524",            "pawnPercent": "85",            "qty": "9.0",            "marketValue": "642000.6",            "marketValueAcc": "642.6",            "instrument": {                "mainMarketId": "23",                "identifier": "16311866",                "type": "A",                "currency": "DKK",                "mainMarketPrice": "55"            }        }]    }}
         var res = this.get(`/accounts/${accNo}/positions`)
         return res;
     }

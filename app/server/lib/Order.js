@@ -9,4 +9,8 @@ Order = class {
 	save() {
 		Orders.insert(this);
 	}
+
+	getTotalValue() {
+		return this.price * this.volume;
+	}
 }

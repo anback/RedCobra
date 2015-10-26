@@ -21,4 +21,8 @@ Util = class {
 
         return rv;
     }
+
+    static roof(number, roof) {
+    	return number < roof ? Math.floor(number) : Math.floor(roof);
+    }
 }
