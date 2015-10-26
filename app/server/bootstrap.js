@@ -4,20 +4,20 @@ Meteor.startup(function() {
     var sharevilleInstrumentRepository = new SharevilleInstrumentRepository();
     var redCobraManager = new RedCobraManager(sharevilleInstrumentRepository, nextApiHandlerMock);
 
-    nextApiHandlerMock.sendOrder = function(order) {
-        order.name = order.instrument.name;
-        delete order.instrument;
-        console.log(order)
-    }
+    //nextApiHandlerMock.sendOrder = function(order) {
+    //    order.name = order.instrument.name;
+    //    delete order.instrument;
+    //    console.log(order)
+    //}
 
     nextApiHandlerMock.getPrice = function() {
         return 57.0
     }
 
-    redCobraManager.handleSellProcess();
-    redCobraManager.handleBuyProcess();
+    //redCobraManager.handleSellProcess();
+    //redCobraManager.handleBuyProcess();
+    //redCobraManager.deleteAllOrders();
+    nextApiHandlerMock.getOrders();
+    //nextApiHandlerMock.getAccount();
+    //nextApiHandlerMock.getAccountPositions();
 });
-
-
-//Vad är nästa mål, joo men att typ givet en nordnet 
-// kunna hämta hem lite kurse och köra, portfölj

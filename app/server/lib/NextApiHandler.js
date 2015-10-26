@@ -10,51 +10,6 @@ NextApiHandler = class {
     }
 
     get(url, params = {}, opts = {}) {
-        return this.sendRequest(url, 'get', params, opts);
-    }
-
-    post(url, opts = {}) {
-        return this.sendRequest(url, 'post', undefined, opts);
-    }
-
-    getCachedResult(url) {
-        var cachedRequest = Request.findOne({
-            url: url
-        })
-
-        if (!cachedRequest)
-            return undefined;
-
-        if(cachedRequest.cachedItems)
-            return cachedRequest.cachedItems
-
-        if (cachedRequest)
-            return cachedRequest;
-    }
-
-    setCachedResult(url, res) {
-
-        if(!res)
-            res = {empty : 'empty'};
-
-        if(Array.isArray(res))
-            res = {
-                cachedItems : res
-            }
-
-        //Set item in cache
-        Request.upsert({
-            url: url
-        }, {
-            $set: res 
-        })
-    }
-
-    sendRequest(url, method = 'get', params = {}, opts = {}) {
-        
-        url = this.baseUrl + url;
-
-        opts.headers = this.getHeaders();
 
         params = Util.toArray(params)
 
@@ -71,16 +26,12 @@ NextApiHandler = class {
 
         //Get Cached Results
         var res = this.getCachedResult(url);
-        if(res)
-        {
-            console.log(`CACHED ${method} -> ${url}`);
+        if (res) {
+            console.log(`CACHED get -> ${url}`);
             return res;
         }
 
-        debugger
-        //Call Service
-        console.log(`${method} -> ${url}`);
-        res = HTTP.call(method, url, opts).data;
+        var res = this.sendRequest(url, 'get', params, opts);
 
         //Set Cached Results
         this.setCachedResult(url, res);
@@ -88,17 +39,80 @@ NextApiHandler = class {
         return res;
     }
 
+    post(url, opts) {
+
+        console.log(opts);
+        return this.sendRequest(url, 'post', undefined, opts);
+    }
+
+    delete(url, opts) {
+        console.log(opts);
+        return this.sendRequest(url, 'delete', undefined, opts);
+    }
+
+    getCachedResult(url) {
+        var cachedRequest = Request.findOne({
+            url: url
+        })
+
+        if (!cachedRequest)
+            return undefined;
+
+        if (cachedRequest.cachedItems)
+            return cachedRequest.cachedItems
+
+        if (cachedRequest)
+            return cachedRequest;
+    }
+
+    setCachedResult(url, res) {
+
+        if (!res)
+            res = {
+                empty: 'empty'
+            };
+
+        if (Array.isArray(res))
+            res = {
+                cachedItems: res
+            }
+
+        //Set item in cache
+        Request.upsert({
+            url: url
+        }, {
+            $set: res
+        })
+    }
+
+    sendRequest(url, method = 'get', params = {}, opts = {}) {
+
+        url = this.baseUrl + url;
+
+        opts.headers = this.getHeaders();
+
+        //Call Service
+        console.log(`${method} -> ${url}`);
+        res = HTTP.call(method, url, opts).data;
+
+        return res;
+    }
+
     sendOrder(order) {
         return this.post(`/accounts/${this.accountNo}/orders`, {
             data: {
-                identifier: order.instrument.instrument_id,
-                marketID: order.instrument.marketID,
+                identifier: order.instrument.tradables[0].identifier,
+                market_id: order.instrument.tradables[0].market_id,
                 price: order.price,
                 volume: order.volume,
                 side: order.side,
                 currency: order.instrument.currency
             }
         });
+    }
+
+    deleteOrder(order) {
+        return this.delete(`/accounts/${this.accountNo}/orders/${order.order_id}`)
     }
 
     getOrders() {
@@ -130,8 +144,8 @@ NextApiHandler = class {
     getPrice(instrument) {
 
         return this.get('/chart_data', {
-            identifier: 101, //instrument.instrument_id,
-            marketID: 11 //instrument.marketID
+            identifier: instrument.instrument_id,
+            marketID: instrument.marketID
         })
     }
 

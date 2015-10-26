@@ -44,6 +44,13 @@ RedCobraManager = class {
         return new Order(sharevilleInstrument.instrument, price, 'sell', volume);
     }
 
+    deleteAllOrders() {
+        var orders = this.nextApiHandler.getOrders();
+        orders.forEach(order => {
+            this.nextApiHandler.deleteOrder(order);
+        })
+    }
+
     getBuyOrder(sharevilleInstrument, account, positions) {
         var position = positions[sharevilleInstrument.instrument.instrument_id];
         var totalValue = account.getTotalValue();
