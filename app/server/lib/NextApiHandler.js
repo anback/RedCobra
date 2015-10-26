@@ -13,8 +13,8 @@ NextApiHandler = class {
         return this.sendRequest(url, 'get', params, opts);
     }
 
-    post(url, params = {}, opts = {}) {
-        return this.sendRequest(url, 'post', params, opts);
+    post(url, opts = {}) {
+        return this.sendRequest(url, 'post', undefined, opts);
     }
 
     sendRequest(url, method = 'get', params = {}, opts = {}) {
@@ -41,12 +41,14 @@ NextApiHandler = class {
 
     sendOrder(order) {
         return this.post(`/accounts/${this.accountNo}/orders`, {
-            identifier : order.instrument.instrument_id,
-            market_id : order.instrument.marketID,
-            price : order.price,
-            volume : order.volume,
-            side : order.side,
-            currency : order.instrument.currency
+            data: {
+                identifier: order.instrument.instrument_id,
+                marketID: order.instrument.marketID,
+                price: order.price,
+                volume: order.volume,
+                side: order.side,
+                currency: order.instrument.currency
+            }
         });
     }
 
@@ -66,9 +68,9 @@ NextApiHandler = class {
         var account = this.get(`/accounts/${accNo}`)
 
         console.log(account);
-        return new Account(account.account_sum.value, 
-            account.full_marketvalue.value, 
-            account.account_currency, 
+        return new Account(account.account_sum.value,
+            account.full_marketvalue.value,
+            account.account_currency,
             account.trading_power.value)
     }
 
@@ -79,22 +81,20 @@ NextApiHandler = class {
     }
 
     getPrice(instrument) {
-        //Skiten funkar nog inte på helger
-        return 57.0;
 
         return this.get('/chart_data', {
-            identifier : instrument.instrument_id,
-            marketID : instrument.marketID
+            identifier: 101, //instrument.instrument_id,
+            marketID: 11 //instrument.marketID
         })
     }
 
     getInstrument(sharevilleInstrument) {
 
         var cachedInstrument = Instruments.findOne({
-            sharevilleInstrumentId : sharevilleInstrument.instrument_id
+            sharevilleInstrumentId: sharevilleInstrument.instrument_id
         })
 
-        if(cachedInstrument)
+        if (cachedInstrument)
             return cachedInstrument;
         var markets = this.marketsRepository.getMarkets(sharevilleInstrument.country);
 
@@ -113,8 +113,7 @@ NextApiHandler = class {
 
             data = data.filter(x => x.symbol === sharevilleInstrument.symbol)
 
-            if(data.length > 0)
-            {
+            if (data.length > 0) {
                 data[0].marketID = market.market_id
                 data[0].sharevilleInstrumentId = sharevilleInstrument.instrument_id
                 return false;
@@ -122,12 +121,12 @@ NextApiHandler = class {
             return true;
         })
 
-        if(!data[0])
-            throw new Error("Could not find instrument " + sharevilleInstrument.name) 
+        if (!data[0])
+            throw new Error("Could not find instrument " + sharevilleInstrument.name)
 
         //Set item in cache
         Instruments.upsert({
-            sharevilleInstrumentId : data[0].instrument_id
+            sharevilleInstrumentId: data[0].instrument_id
         }, {
             $set: data[0]
         })
@@ -155,7 +154,7 @@ NextApiHandler = class {
                 auth: auth
             }
         }
-        return this.post('/login', undefined, opts)
+        return this.post('/login', opts)
     }
 
     encryptLogin(user, pass, keyfile) {

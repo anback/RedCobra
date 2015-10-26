@@ -23,6 +23,8 @@ Util = class {
     }
 
     static roof(number, roof) {
-    	return number < roof ? Math.floor(number) : Math.floor(roof);
+    	var res = number < roof ? Math.floor(number) : Math.floor(roof);
+
+    	return Math.abs(res);
     }
 }

@@ -46,7 +46,7 @@ RedCobraManager = class {
 
     getBuyOrder(sharevilleInstrument, account, positions) {
         var position = positions[sharevilleInstrument.instrument.instrument_id];
-        var fullMarketvalue = account.fullMarketValue;
+        var totalValue = account.getTotalValue();
         var price = this.nextApiHandler.getPrice(sharevilleInstrument.instrument)
 
         if (!position)
@@ -56,9 +56,9 @@ RedCobraManager = class {
 
             };
 
-        var currentWeight = parseFloat(position.marketValue) / parseFloat(fullMarketvalue);
+        var currentWeight = parseFloat(position.marketValue) / parseFloat(totalValue);
         var currentWeightDiff = sharevilleInstrument.weightInterval.getWeightDiff(currentWeight);
-        var volume = Util.roof(fullMarketvalue * currentWeightDiff / price, account.availableMoney / price)
+        var volume = Util.roof(totalValue * currentWeightDiff / price, account.availableMoney / price)
 
         if (volume == 0)
             return undefined;
@@ -102,7 +102,7 @@ RedCobraManager = class {
             if (order)
                 buyOrders.push(order);
 
-            return order.getTotalValue() - availableMoney;
+            return availableMoney - order.getTotalValue();
         }, availableMoney)
 
         buyOrders.forEach(order => this.nextApiHandler.sendOrder(order));

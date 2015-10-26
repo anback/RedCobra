@@ -7,6 +7,6 @@ Account = class {
 	}
 
 	getTotalValue() {
-		return this.fullMarketValue + this.accounSum; //stocks value + available money
+		return this.fullMarketValue + this.accountSum; //stocks value + available money
 	}
 }
