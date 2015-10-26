@@ -2,17 +2,7 @@ RedCobraManager = class {
     constructor(sharevilleInstrumentRepository, nextApiHandler) {
         this.sharevilleInstrumentRepository = sharevilleInstrumentRepository;
         this.nextApiHandler = nextApiHandler;
-        this.weightIntervals = [];
-        this.weightIntervals.push(new WeightInterval(0, 0.075, 0.05))
-        this.weightIntervals.push(new WeightInterval(0, 0.075, 0.05))
-        this.weightIntervals.push(new WeightInterval(0, 0.075, 0.05))
-        this.weightIntervals.push(new WeightInterval(0.075, 0.125))
-        this.weightIntervals.push(new WeightInterval(0.075, 0.0125))
-        this.weightIntervals.push(new WeightInterval(0.075, 0.0125))
-        this.weightIntervals.push(new WeightInterval(0.075, 0.0125))
-        this.weightIntervals.push(new WeightInterval(0.125, 0.175))
-        this.weightIntervals.push(new WeightInterval(0.125, 0.175))
-        this.weightIntervals.push(new WeightInterval(0.125, 0.175))
+        this.weightIntervals = WeightInterval.getIntervals();
     }
 
     getPopularInstruments() {
@@ -74,6 +64,11 @@ RedCobraManager = class {
             return undefined;
 
         return new Order(sharevilleInstrument.instrument, price, 'buy', volume)
+    }
+
+    syncPortfolio() {
+        this.handleSellProcess();
+        this.handleBuyProcess();
     }
 
     handleBuyProcess() {

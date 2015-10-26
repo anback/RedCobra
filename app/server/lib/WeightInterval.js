@@ -9,6 +9,22 @@ WeightInterval = class {
 			this.mean = mean
 	}
 
+	static getIntervals() {
+		let weightIntervals = [];
+        weightIntervals.push(new WeightInterval(0, 0.075, 0.05))
+        weightIntervals.push(new WeightInterval(0, 0.075, 0.05))
+        weightIntervals.push(new WeightInterval(0, 0.075, 0.05))
+        weightIntervals.push(new WeightInterval(0.075, 0.125))
+        weightIntervals.push(new WeightInterval(0.075, 0.0125))
+        weightIntervals.push(new WeightInterval(0.075, 0.0125))
+        weightIntervals.push(new WeightInterval(0.075, 0.0125))
+        weightIntervals.push(new WeightInterval(0.125, 0.175))
+        weightIntervals.push(new WeightInterval(0.125, 0.175))
+        weightIntervals.push(new WeightInterval(0.125, 0.175))
+
+        return weightIntervals;
+	}
+
 	isInInterval(weight) {
 		return weight >= this.min && weight < this.max 
 	}
