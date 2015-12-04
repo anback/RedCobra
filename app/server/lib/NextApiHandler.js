@@ -4,12 +4,25 @@ var ursa = Meteor.npmRequire('ursa');
 NextApiHandler = class {
     constructor(marketsRepository) {
         this.baseUrl = 'https://api.test.nordnet.se/next/2';
-        this.session = this.login(Meteor.settings.nextUser, Meteor.settings.nextPass)
+        this.session = this.getSession();
+        console.log(this.session);
         this.accountNo = '9211238';
         this.marketsRepository = marketsRepository;
+        this.cachedRequests = {};
     }
 
-    get(url, params = {}, opts = {}) {
+    getSession() {
+
+        if (Meteor.settings.session_key != "")
+            return {
+                session_key: Meteor.settings.session_key
+            }
+
+        return this.login(Meteor.settings.nextUser, Meteor.settings.nextPass)
+    }
+
+
+    get(url, params = {}, opts = {}, shouldUseCache = true) {
 
         params = Util.toArray(params)
 
@@ -26,7 +39,7 @@ NextApiHandler = class {
 
         //Get Cached Results
         var res = this.getCachedResult(url);
-        if (res) {
+        if (res && shouldUseCache) {
             console.log(`CACHED get -> ${url}`);
             return res;
         }
@@ -50,39 +63,17 @@ NextApiHandler = class {
         return this.sendRequest(url, 'delete', undefined, opts);
     }
 
+    update(url, opts) {
+        console.log(opts);
+        return this.sendRequest(url, 'put', undefined, opts)
+    }
+
     getCachedResult(url) {
-        var cachedRequest = Request.findOne({
-            url: url
-        })
-
-        if (!cachedRequest)
-            return undefined;
-
-        if (cachedRequest.cachedItems)
-            return cachedRequest.cachedItems
-
-        if (cachedRequest)
-            return cachedRequest;
+        return this.cachedRequests[url];
     }
 
     setCachedResult(url, res) {
-
-        if (!res)
-            res = {
-                empty: 'empty'
-            };
-
-        if (Array.isArray(res))
-            res = {
-                cachedItems: res
-            }
-
-        //Set item in cache
-        Request.upsert({
-            url: url
-        }, {
-            $set: res
-        })
+        this.cachedRequests[url] = res;
     }
 
     sendRequest(url, method = 'get', params = {}, opts = {}) {
@@ -99,7 +90,7 @@ NextApiHandler = class {
     }
 
     sendOrder(order) {
-        return this.post(`/accounts/${this.accountNo}/orders`, {
+        var res = this.post(`/accounts/${this.accountNo}/orders`, {
             data: {
                 identifier: order.instrument.tradables[0].identifier,
                 market_id: order.instrument.tradables[0].market_id,
@@ -109,6 +100,20 @@ NextApiHandler = class {
                 currency: order.instrument.currency
             }
         });
+        console.log("send order")
+        console.log(res)
+        return res;
+    }
+
+    updateOrder(order_id, volume) {
+        var res = this.update(`/accounts/${this.accountNo}/orders/${order_id}`, {
+            data: {
+                volume: volume
+            }
+        })
+        console.log("update order")
+        console.log(res)
+        return res;
     }
 
     deleteOrder(order) {
@@ -116,7 +121,7 @@ NextApiHandler = class {
     }
 
     getOrders() {
-        return this.get(`/accounts/${this.accountNo}/orders`);
+        return this.get(`/accounts/${this.accountNo}/orders`, undefined, undefined, false);
     }
 
     getMarkets() {
@@ -176,8 +181,11 @@ NextApiHandler = class {
             return true;
         })
 
+        //Cert Code
+        /*
         if (!data[0])
             throw new Error("Could not find instrument " + sharevilleInstrument.name)
+        */
 
         return data[0];
     }

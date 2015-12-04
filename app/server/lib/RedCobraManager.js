@@ -12,6 +12,9 @@ RedCobraManager = class {
         })
         res = res.map((item, index) => {
             var instrument = this.nextApiHandler.getInstrument(item);
+
+            if(!instrument)
+                return;
             return {
                 symbol: item.symbol,
                 weightInterval: this.weightIntervals[index],
@@ -19,7 +22,7 @@ RedCobraManager = class {
                 occurence_prc: item.occurence_prc,
                 instrument: instrument
             }
-        })
+        }).filter(x => x != undefined);
 
         return res;
     }
@@ -46,9 +49,10 @@ RedCobraManager = class {
 
     deleteAllOrders() {
         var orders = this.nextApiHandler.getOrders();
-        orders.forEach(order => {
-            this.nextApiHandler.deleteOrder(order);
-        })
+        if(orders)
+            orders.forEach(order => {
+                this.nextApiHandler.deleteOrder(order);
+            })
     }
 
     getBuyOrder(sharevilleInstrument, account, positions) {
