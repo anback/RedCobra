@@ -13,11 +13,6 @@ NextApiHandler = class {
 
     getSession() {
 
-        if (Meteor.settings.session_key != "")
-            return {
-                session_key: Meteor.settings.session_key
-            }
-
         return this.login(Meteor.settings.nextUser, Meteor.settings.nextPass)
     }
 
